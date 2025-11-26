@@ -33,6 +33,20 @@
       letter-spacing: 0.02em;
     }
 
+    #app-version {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0.75rem;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.12);
+      color: #e5e7eb;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
     #sidebar {
       grid-area: sidebar;
       padding: 1.25rem;
@@ -101,6 +115,56 @@
       color: #0b5c2d;
     }
 
+    .log-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .log-item {
+      padding: 0.5rem 0.6rem;
+      border: 1px solid #e3e7ee;
+      border-radius: 6px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .log-item .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 999px;
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .badge.info { background: #2563eb; }
+    .badge.success { background: #0ea35c; }
+    .badge.warn { background: #d97706; }
+    .badge.error { background: #b42318; }
+
+    #error-log {
+      background: #0b1221;
+      color: #f8fafc;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.85rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      min-height: 4rem;
+      white-space: pre-wrap;
+      border: 1px solid #111827;
+    }
+
     #controls-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -161,7 +225,7 @@
 </head>
 <body>
   <header>
-    <h1>STL Comparinator – Unit & Orientation Aware</h1>
+    <h1>STL Comparinator – Unit & Orientation Aware <span id="app-version" aria-label="App version"></span></h1>
   </header>
   <div id="sidebar">
     <section>
@@ -187,6 +251,18 @@
         <button id="rotate-y-neg" type="button">-90° around Y</button>
       </div>
       <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #4b5563;">Rotate the student model to match the baseline’s orientation. Metrics update after each rotation.</p>
+    </section>
+
+    <section>
+      <h2>Activity log</h2>
+      <ul id="event-log" class="log-list" aria-live="polite">
+        <li class="log-item"><span class="badge info">i</span><span>Waiting to load models.</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Error details</h2>
+      <div id="error-log" aria-live="polite" aria-label="Error log">No errors yet.</div>
     </section>
 
     <section id="metrics">
