@@ -1,8 +1,6 @@
 import { initViewer, loadBaseline, loadStudent, rotateStudent, resetStudentOrientation, getNormalizedGeometries } from './viewer.js';
 import { compareModels } from './compare.js';
 
-const APP_VERSION = 'v1.0.1';
-
 const elements = {};
 
 function cacheDom() {
@@ -17,7 +15,6 @@ function cacheDom() {
   elements.rotateYPos = document.getElementById('rotate-y-pos');
   elements.rotateYNeg = document.getElementById('rotate-y-neg');
   elements.resetOrientation = document.getElementById('reset-orientation');
-  elements.appVersion = document.getElementById('app-version');
 }
 
 function setStatus(message, isError = false) {
@@ -109,9 +106,6 @@ function wireEvents() {
 
 function main() {
   cacheDom();
-  if (elements.appVersion) {
-    elements.appVersion.textContent = APP_VERSION;
-  }
   initViewer(elements.rendererRoot);
   wireEvents();
   setStatus('Ready. Load the models to begin.');
