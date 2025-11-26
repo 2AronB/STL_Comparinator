@@ -1,1 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STL Comparinator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f7fb;
+      color: #1f2933;
+      line-height: 1.5;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      grid-template-rows: auto 1fr;
+      grid-template-areas:
+        "header header"
+        "sidebar viewer";
+      min-height: 100vh;
+    }
 
+    header {
+      grid-area: header;
+      padding: 1rem 1.5rem;
+      background: #1f2933;
+      color: #fff;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.02em;
+    }
+
+    #sidebar {
+      grid-area: sidebar;
+      padding: 1.25rem;
+      background: #ffffff;
+      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    #viewer-container {
+      grid-area: viewer;
+      position: relative;
+      background: #0b1221;
+    }
+
+    #renderer-root {
+      position: absolute;
+      inset: 0;
+    }
+
+    section {
+      background: #f9fafb;
+      border: 1px solid #e3e7ee;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    h2 {
+      margin: 0 0 0.75rem 0;
+      font-size: 1rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="file"] {
+      width: 100%;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid #1f7aec;
+      background: #1f7aec;
+      color: #fff;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: background 120ms ease, transform 120ms ease;
+    }
+
+    button:hover {
+      background: #1663c7;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    #status {
+      min-height: 1.5rem;
+      font-size: 0.95rem;
+      color: #0b5c2d;
+    }
+
+    #controls-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+
+    #metrics table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    #metrics th,
+    #metrics td {
+      padding: 0.35rem;
+      border-bottom: 1px solid #e3e7ee;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    #metrics th {
+      background: #eef2f7;
+      font-weight: 700;
+    }
+
+    #metrics caption {
+      caption-side: bottom;
+      padding-top: 0.35rem;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+
+    @media (max-width: 960px) {
+      body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr;
+        grid-template-areas:
+          "header"
+          "sidebar"
+          "viewer";
+      }
+
+      #sidebar {
+        box-shadow: none;
+      }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/build/three.module.js",
+        "three/examples/jsm/controls/OrbitControls.js": "./vendor/three/OrbitControls.js",
+        "three/examples/jsm/loaders/STLLoader.js": "./vendor/three/STLLoader.js"
+      }
+    }
+  </script>
+  <script type="module" src="./src/main.js"></script>
+</head>
+<body>
+  <header>
+    <h1>STL Comparinator – Unit & Orientation Aware</h1>
+  </header>
+  <div id="sidebar">
+    <section>
+      <h2>Load models</h2>
+      <p>Leave inputs empty to use <strong>baseline.stl</strong> (reference) and <strong>variant.stl</strong> (student example).</p>
+      <label for="baseline-file">Baseline STL</label>
+      <input id="baseline-file" type="file" accept=".stl" />
+      <label for="student-file" style="margin-top: 0.75rem;">Student STL</label>
+      <input id="student-file" type="file" accept=".stl" />
+      <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+        <button id="load-btn" style="flex: 1;">Load models</button>
+        <button id="reset-orientation" type="button" style="flex: 1; background: #4b5563; border-color: #4b5563;">Reset orientation</button>
+      </div>
+      <div id="status" aria-live="polite"></div>
+    </section>
+
+    <section>
+      <h2>Orientation controls (student mesh)</h2>
+      <div id="controls-grid">
+        <button id="rotate-x-pos" type="button">+90° around X</button>
+        <button id="rotate-x-neg" type="button">-90° around X</button>
+        <button id="rotate-y-pos" type="button">+90° around Y</button>
+        <button id="rotate-y-neg" type="button">-90° around Y</button>
+      </div>
+      <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #4b5563;">Rotate the student model to match the baseline’s orientation. Metrics update after each rotation.</p>
+    </section>
+
+    <section id="metrics">
+      <h2>Comparison metrics</h2>
+      <div id="metrics-table">Load models to see metrics.</div>
+    </section>
+  </div>
+  <div id="viewer-container">
+    <div id="renderer-root"></div>
+  </div>
+</body>
+</html>
