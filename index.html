@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>STL Comparinator</title>
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' ry='12' fill='%231f2933'/%3E%3Cpath d='M18 18h28v8H18zm0 10h20v8H18zm0 10h28v8H18z' fill='%23a0c4ff'/%3E%3C/svg%3E"
+  />
   <style>
     body {
       margin: 0;
@@ -225,7 +230,7 @@
 </head>
 <body>
   <header>
-    <h1>STL Comparinator – Unit & Orientation Aware <span id="app-version" aria-label="App version"></span></h1>
+    <h1>STL Comparinator – Unit & Orientation Aware <span id="app-version" aria-label="App version">v1.1.1</span></h1>
   </header>
   <div id="sidebar">
     <section>
@@ -273,5 +278,18 @@
   <div id="viewer-container">
     <div id="renderer-root"></div>
   </div>
+  <script>
+    // Fallback boot watchdog: if the module import fails (e.g., missing vendor/three/build/three.core.js),
+    // surface a clear error in the log instead of leaving the UI silent.
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        if (window.__stlComparinatorBooted) return;
+        const errorLog = document.getElementById('error-log');
+        const message = 'Startup stalled: the main module did not load. Check that vendor/three/build/three.core.js exists alongside three.module.js.';
+        if (errorLog) errorLog.textContent = message;
+        console.error(message);
+      }, 1500);
+    });
+  </script>
 </body>
 </html>

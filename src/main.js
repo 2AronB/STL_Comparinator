@@ -1,6 +1,9 @@
 import { initViewer, loadBaseline, loadStudent, rotateStudent, resetStudentOrientation, getNormalizedGeometries } from './viewer.js';
 import { compareModels } from './compare.js';
 
+const APP_VERSION = 'v1.1.1';
+const LOG_LIMIT = 30;
+
 const elements = {};
 
 function cacheDom() {
@@ -15,11 +18,77 @@ function cacheDom() {
   elements.rotateYPos = document.getElementById('rotate-y-pos');
   elements.rotateYNeg = document.getElementById('rotate-y-neg');
   elements.resetOrientation = document.getElementById('reset-orientation');
+  elements.appVersion = document.getElementById('app-version');
+  elements.eventLog = document.getElementById('event-log');
+  elements.errorLog = document.getElementById('error-log');
 }
 
 function setStatus(message, isError = false) {
   elements.status.textContent = message;
   elements.status.style.color = isError ? '#b42318' : '#0b5c2d';
+}
+
+function logBadgeFor(level) {
+  switch (level) {
+    case 'success':
+      return '✓';
+    case 'warn':
+      return '!';
+    case 'error':
+      return '!';
+    default:
+      return 'i';
+  }
+}
+
+function trimLog(list) {
+  if (!list) return;
+  while (list.children.length > LOG_LIMIT) {
+    list.removeChild(list.firstChild);
+  }
+}
+
+function appendEventLog(message, level = 'info') {
+  if (!elements.eventLog) return;
+  const li = document.createElement('li');
+  li.className = 'log-item';
+
+  const badge = document.createElement('span');
+  badge.className = `badge ${level}`;
+  badge.textContent = logBadgeFor(level);
+
+  const text = document.createElement('span');
+  text.textContent = `${new Date().toLocaleTimeString()} — ${message}`;
+
+  li.appendChild(badge);
+  li.appendChild(text);
+  elements.eventLog.appendChild(li);
+  trimLog(elements.eventLog);
+}
+
+function clearEventLog() {
+  if (!elements.eventLog) return;
+  elements.eventLog.innerHTML = '';
+}
+
+function resetErrorLog() {
+  if (elements.errorLog) {
+    elements.errorLog.textContent = 'No errors yet.';
+  }
+}
+
+function appendErrorLog(message, error) {
+  if (!elements.errorLog) return;
+  const details = [];
+  details.push(`${new Date().toLocaleTimeString()} — ${message}`);
+  if (error) {
+    if (error.message) details.push(`Message: ${error.message}`);
+    if (error.stack) details.push(`Stack: ${error.stack}`);
+  }
+  const combined = details.join('\n');
+  elements.errorLog.textContent = elements.errorLog.textContent === 'No errors yet.'
+    ? combined
+    : `${elements.errorLog.textContent}\n\n${combined}`;
 }
 
 function getInputOrDefault(input, defaultUrl) {
@@ -63,17 +132,27 @@ function renderMetricsTable(result) {
 
 async function handleLoadModels() {
   try {
+    clearEventLog();
+    resetErrorLog();
+    appendEventLog('Load button clicked. Starting baseline load.', 'info');
     setStatus('Loading baseline…');
+
     await loadBaseline(getInputOrDefault(elements.baselineInput, './baseline.stl'));
+    appendEventLog('Baseline loaded, centered, and ready.', 'success');
 
     setStatus('Loading student model…');
+    appendEventLog('Loading student model with scale normalization.', 'info');
     await loadStudent(getInputOrDefault(elements.studentInput, './variant.stl'));
+    appendEventLog('Student loaded, scaled to baseline, orientation reset.', 'success');
 
     updateMetrics();
+    appendEventLog('Metrics computed for normalized meshes.', 'success');
     setStatus('Models loaded. Use the orientation controls if needed.');
   } catch (err) {
     console.error(err);
     setStatus(`Failed to load STL: ${err.message}`, true);
+    appendEventLog('Model loading failed. See error details below.', 'error');
+    appendErrorLog('Model load error', err);
   }
 }
 
@@ -90,7 +169,10 @@ function wireEvents() {
   const rotateAndReport = (axis, direction) => {
     rotateStudent(axis, direction);
     updateMetrics();
+    const axisLabel = axis.toUpperCase();
+    const directionLabel = direction > 0 ? '+90°' : '-90°';
     setStatus('Student orientation adjusted. Metrics refreshed.');
+    appendEventLog(`Rotated student ${directionLabel} around ${axisLabel}.`, 'info');
   };
 
   elements.rotateXPos.addEventListener('click', () => rotateAndReport('x', 1));
@@ -101,14 +183,21 @@ function wireEvents() {
     resetStudentOrientation();
     updateMetrics();
     setStatus('Student orientation reset to default.');
+    appendEventLog('Student orientation reset.', 'warn');
   });
 }
 
 function main() {
   cacheDom();
+  if (elements.appVersion) {
+    elements.appVersion.textContent = APP_VERSION;
+  }
+  clearEventLog();
+  appendEventLog('Viewer booted. Ready to load models.', 'info');
   initViewer(elements.rendererRoot);
   wireEvents();
   setStatus('Ready. Load the models to begin.');
+  window.__stlComparinatorBooted = true;
 }
 
 main();
